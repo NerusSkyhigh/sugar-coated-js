@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Cannon Ball</title>
+    </head>
+
+    <body>
+        <canvas id="myCanvas" style="border: 2px solid"></canvas>
+
+        <script>
+
+            //  Canvas setup
+            var canvas = document.getElementById("myCanvas")
+            var c = canvas.getContext("2d");
+
+            canvas.width = window.innerWidth - 20;
+            canvas.height = window.innerHeight - 100;
+
+            var simMinWidth = 20.0;
+            var cScale = Math.min(canvas.width, canvas.height) / simMinWidth;
+            var simWidth = canvas.width / cScale;
+            var sunHeight = canvas.height/cScale;
+
+            function cX(pos) {
+                return pos.x * cScale;
+            }
+
+            function cY(pos) {
+                return canvas.height - pos.y * cScale;
+            }
+
+            // scene
+            var gravity = {x: 0.0, y:-9.81}; // I refuse to set g=10
+                                             // It doesn't even speed up computation because it is not a power of 2.
+            var timeStep = 1.0/60.0; // 60fps (?)
+
+            var ball = {
+                radius: 0.2,
+                pos: {x:0.2, y:0.2},
+                vel: {x:10.0, y:15.0}
+            };
+
+            //  Drawing
+            function draw() {
+                c.clearRect(0, 0, canvas.width, canvas.height);
+                
+                c.fillStyle = "#FF0000"; // red
+
+                c.beginPath();
+                c.arc(cX(ball.pos), cY(ball.pos), cScale*ball.radius, 0.0, 2.0*Math.PI);
+                c.closePath();
+                c.fill();
+            }
+
+            //  Simulation
+            function simulate(){
+                // Simpletic Euler
+                ball.vel.x += gravity.x * timeStep;
+                ball.vel.y += gravity.y * timeStep;
+
+                ball.pos.x += ball.vel.x * timeStep;
+                ball.pos.y += ball.vel.y * timeStep;
+
+                if(ball.pos.x < ball.radius){
+                    ball.pos.x = ball.radius;
+                    ball.vel.x = -0.9*ball.vel.x;
+                }
+
+                if(ball.pos.x+ball.radius/2 > simWidth){
+                    ball.pos.x = simWidth-ball.radius;
+                    ball.vel.x = -0.9*ball.vel.x;
+                }
+
+                if(ball.pos.y < ball.radius) {
+                    ball.pos.y = ball.radius;
+                    ball.vel.y = -0.9*ball.vel.y;
+                }
+
+                // It won't escape from above (I hope) :3
+
+            }
+
+            //  Update function
+            function update() {
+                simulate();
+                draw();
+                requestAnimationFrame(update); // is this recursion?
+            }
+
+            // Forces the browser to call update the first time.
+            update();
+
+        </script>
+    </body>
+
+</html>
